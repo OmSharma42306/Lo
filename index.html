@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -101,5 +101,118 @@
             return inside;
         }
     </script>
+</body>
+</html>
+ -->
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classroom Attendance Check</title>
+  <style>
+    #polygon {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      border: 1px solid #000;
+      margin-bottom: 20px;
+    }
+    .point {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background-color: red;
+      border-radius: 50%;
+    }
+    .student-point {
+      background-color: blue;
+    }
+  </style>
+</head>
+<body>
+  <h2>Classroom Attendance Check</h2>
+
+  <div id="polygon"></div>
+
+  <div>
+    <label for="student-lat">Student Latitude:</label>
+    <input type="text" id="student-lat" value="16.507010"><br>
+    <label for="student-lng">Student Longitude:</label>
+    <input type="text" id="student-lng" value="75.276235"><br>
+    <button onclick="checkStudentLocation()">Check Location</button>
+  </div>
+
+  <p id="result"></p>
+
+  <script>
+    const roomCoordinates = [
+      { lat: 16.506950, lng: 75.276248 },
+      { lat: 16.506908, lng: 75.276667 },
+      { lat: 16.506986, lng: 75.276719 },
+      { lat: 16.506865, lng: 75.276364 }
+    ];
+
+    const scale = 500000;  // Scale to convert lat/lng to pixels
+
+    function drawPolygon() {
+      const polygonDiv = document.getElementById('polygon');
+      polygonDiv.innerHTML = '';  // Clear existing points
+
+      roomCoordinates.forEach((point) => {
+        const pointDiv = document.createElement('div');
+        pointDiv.className = 'point';
+        pointDiv.style.left = (point.lng - 75.276000) * scale + 'px';
+        pointDiv.style.top = (16.507500 - point.lat) * scale + 'px';
+        polygonDiv.appendChild(pointDiv);
+      });
+    }
+
+    function isPointInPolygon(point, polygon) {
+      const x = point.lat, y = point.lng;
+      let wn = 0;
+
+      for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const xi = polygon[i].lat, yi = polygon[i].lng;
+        const xj = polygon[j].lat, yj = polygon[j].lng;
+
+        if (yi <= y) {
+          if (yj > y && isLeft([xi, yi], [xj, yj], [x, y]) > 0) {
+            wn++;
+          }
+        } else {
+          if (yj <= y && isLeft([xi, yi], [xj, yj], [x, y]) < 0) {
+            wn--;
+          }
+        }
+      }
+
+      return wn !== 0;
+    }
+
+    function isLeft(p0, p1, p2) {
+      return (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p2[0] - p0[0]) * (p1[1] - p0[1]);
+    }
+
+    function checkStudentLocation() {
+      const lat = parseFloat(document.getElementById('student-lat').value);
+      const lng = parseFloat(document.getElementById('student-lng').value);
+      const studentLocation = { lat: lat, lng: lng };
+
+      const result = isPointInPolygon(studentLocation, roomCoordinates);
+      document.getElementById('result').innerText = result ? "Student is inside the room." : "Student is outside the room.";
+
+      // Draw student location on the map
+      const studentDiv = document.createElement('div');
+      studentDiv.className = 'point student-point';
+      studentDiv.style.left = (studentLocation.lng - 75.276000) * scale + 'px';
+      studentDiv.style.top = (16.507500 - studentLocation.lat) * scale + 'px';
+      document.getElementById('polygon').appendChild(studentDiv);
+    }
+
+    // Initial draw of the classroom polygon
+    drawPolygon();
+  </script>
 </body>
 </html>
